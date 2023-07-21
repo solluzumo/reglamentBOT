@@ -49,6 +49,17 @@ data = {
         "значение3": "foo"
     }
 }
+def vloj(item):
 
-result = process_nested_dict(data)
-print(result)
+   for it in item:
+
+
+       if str(type(it)) != "<class 'str'>":
+            vloj(it)
+       print(item)
+def process_nested(data):
+    result = []
+    for item in data.items():
+        vloj(item)
+
+result = process_nested(data)
