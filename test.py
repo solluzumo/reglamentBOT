@@ -1,14 +1,14 @@
 import json
-import difflib
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode
 from fuzzywuzzy import fuzz
-
+from aiogram import executor
+from keyboards import get_titles_correction
 # Здесь вы можете предоставить данные заголовки и соответствующие тексты
 
 # Ваш токен бота
-TOKEN = ""
+TOKEN = "5781618054:AAGzAr-MbhK26CNH7NpXvtTTPBEuUiea0xs"
 
 # Инициализируем бота и диспетчер
 bot = Bot(token=TOKEN)
@@ -38,19 +38,23 @@ async def process_title(message: types.Message):
             best_match = title
 
     if best_match:
-        formatted_text = "\n".join(f"⦁ {text.lstrip('-')}" for text in data[best_match] if text.strip())
-        await message.reply(f"Найден соответствующий заголовок: '{best_match}':\n\n{formatted_text}",
-                            parse_mode=ParseMode.MARKDOWN)
+        titles = [f"{text.lstrip('-')}" for text in data[best_match] if text.strip()]
+        info = [[title] for title in titles]
+        for element in info:
+            for subtitle in data[best_match][element[0]]:
+                element.append(subtitle)
+        print(info)
+        keyboard = get_titles_correction(titles)
+        await message.reply(f"Найден соответствующий заголовок, выберите подходящий вам: '{best_match}':",reply_markup=keyboard)
     else:
         await message.reply("Заголовок не найден. Попробуйте ввести другой заголовок.")
 
 if __name__ == "__main__":
-    # Запуск бота
-    from aiogram import executor
     executor.start_polling(dp, skip_updates=True)
-#находить сначал без fuzzy wuzzy, если не удаётся найти точное совпадение, то уже подрубаем fuzzy wuzzy
-#выводить подпункты по желанию пользователя(через клаву)
-#выводить выбранный из трёх похожих пунктов (через клаву)
+
+#фото+
+#выводить подпункты по желанию пользователя(через клаву)+
+#выводить выбранный из трёх похожих пунктов (через клаву)+
 #про вопросы коллег где и какую инфу искать: сделать по каждому регламенту на основе заколовков и содержания несколько уточняющих категорий(типо инструкция по монтажу на буровой, инструкция по гидравлическим испытаниям ПВО и т.п.) (такой же поиск по заголовкам)
 #если не нахожу по заголовкам, то:
 #1)с помощью fuzzywuzzy нахожу 10 похожих заголовков и там ищу в каждом пункте/подпункте
