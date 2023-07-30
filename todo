@@ -23,12 +23,7 @@ accordance+
 пароли для закрытого доступа
 
 заголовки к регламентам
-фото
 переделать оставшиеся файлы
-глоссарий
+вывод глоссария+
 
-class Title
-id/title_name/reg_name/glossary/photo/table
-
-class reg
-id/reg_name/glossary
+вывод фото и таблицы

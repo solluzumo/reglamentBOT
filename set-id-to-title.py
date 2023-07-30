@@ -34,14 +34,14 @@ def func(keys,data):
 
 
 
-file_names = os.listdir('text/reglaments')
+file_names = os.listdir('static/text/reglaments')
 for file_name in file_names:
-    data = json.loads(open(f"text/reglaments/{file_name}", encoding="utf-8").read())
+    data = json.loads(open(f"static/text/reglaments/{file_name}", encoding="utf-8").read())
 
     keys = list(data.keys())
     final = func(keys,data)
-    file = open("text/accordance",'w',encoding="utf-8")
+    file = open("static/text/accordance", 'w', encoding="utf-8")
     for i in final:
         file.write("/".join([el for el in i]))
-        file.write("/photo1/table1/reg1\n")
+        file.write("/ИНСТРУКЦИЯ ООО «РН-ЮГАНСКНЕФТЕГАЗ» ПО ПРЕДУПРЕЖДЕНИЮ ВОЗНИКНОВЕНИЯ ГАЗОНЕФТЕВОДОПРОЯВЛЕНИЙ И ОТКРЫТЫХ ФОНТАНОВ ПРИ БУРЕНИИ НЕФТЯНЫХ И ГАЗОВЫХ СКВАЖИН\n")
     file.close()

@@ -18,7 +18,8 @@ async def send_welcome(message: types.Message):
 # Обработчик ввода заголовка пользователем
 @dp.message_handler(content_types=types.ContentTypes.TEXT)
 async def process_title(message: types.Message):
-    data = open("text/reglaments/reg1", encoding="utf-8").read()
+    data = open(
+        "static/text/reglaments/ИНСТРУКЦИЯ ООО «РН-ЮГАНСКНЕФТЕГАЗ» ПО ПРЕДУПРЕЖДЕНИЮ ВОЗНИКНОВЕНИЯ ГАЗОНЕФТЕВОДОПРОЯВЛЕНИЙ И ОТКРЫТЫХ ФОНТАНОВ ПРИ БУРЕНИИ НЕФТЯНЫХ И ГАЗОВЫХ СКВАЖИН", encoding="utf-8").read()
     user_title = message.text
     match = difflib.get_close_matches(user_title, data.keys(), n=1, cutoff=0.6)
     if match:
