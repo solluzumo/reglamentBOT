@@ -10,7 +10,7 @@ import search
 import classes as titles
 
 
-TOKEN = os.getenv("token")
+TOKEN = os.getenv("TGTOKEN")
 
 # Инициализируем бота и диспетчер
 bot = Bot(token=TOKEN)
