@@ -1,10 +1,13 @@
+import aiogram
 from aiogram import types
 import search
 import keyboards
 import classes as titles
 from aiogram.types import InlineKeyboardMarkup
 import json
-async def send_reply(object: types.Message,
+import asyncio
+async def send_reply(bot: aiogram.Bot,
+                     object: types.Message,
                      parsed_title: titles.Title,
                      cluster:dict[str,str]|dict[str,None]|None,
                      is_cluster:bool)->None:
@@ -24,15 +27,29 @@ async def send_reply(object: types.Message,
             keyboard = keyboards.insert_photos(keyboard,parsed_title)
         if parsed_title.table:
             keyboard = keyboards.insert_tables(keyboard,parsed_title)
-        keyboard = keyboards.insert_glossary(keyboard)
+        if parsed_title.reglament.glossary:
+            keyboard = keyboards.insert_glossary(keyboard)
 
     keyboard = keyboards.insert_cancel(keyboard)
-    message_reply_text = f"По вашему запросу нашел следующий пункт:\n{parsed_title.title_name}\n\n{' '.join(titles)}\n\n"
+    message_reply_text = (
+        f"🔹 По вашему запросу найден следующий пункт:\n{parsed_title.title_name}\n\n"
+        f"🔹 Из регламента:\n\n{parsed_title.reglament.full_reg_name}\n\n"
+        f"{' '.join(titles)}\n\n"
+    )
+
+    if is_cluster:
+        message_reply_text = f"По вашему запросу найдены следующие пункты:\n\n{' '.join(titles)}\n\n"
 
     if total_buttons > 2:
         message_reply_text += f"Некоторые подпункты слишком объемные, поэтому выберите пожалуйста один из них:\n"
+    if len(message_reply_text) > 4096:
+        for x in range(0, len(message_reply_text), 4096):
+            await bot.send_message(object.chat.id, message_reply_text[x:x + 4096])
+            await asyncio.sleep(3)
+        await bot.send_message(object.chat.id, "Чтобы вернуться назад, посмотреть другие пункты или увидеть глоссарий, воспользуйтесь клавиатурой:\n", reply_markup=keyboard)
+    else:
+        await bot.send_message(object.chat.id, message_reply_text, reply_markup=keyboard)
 
-    await object.reply(message_reply_text, reply_markup=keyboard)
 
     return None
 
@@ -55,8 +72,24 @@ async def process_title(parsed_title: titles.Title,
         current_root = cluster
 
     complex_titles = []
-    accordance_list = [el.split('/')[1] for el in open("static/text/accordance").read().split('\n')]
-    all_together = [f"\n{text.strip()}\n" for text in current_root if not text.strip() in accordance_list]
+    accordance_list = [el.split('~~')[1] for el in open("static/text/accordance", encoding="utf-8").read().split('\n')]
+    all_together = []
+    for text in current_root:
+        if not isinstance(text,dict):
+            if not text.strip() in accordance_list:
+                all_together.append(f"\n🔸{text.strip()}\n")
+
+        else:
+            for item, value in text.items():
+                if item.strip() in accordance_list:
+                    title = item.strip()
+                    id = search.find_index_by_line(title)
+                    line = search.find_line_by_index(id)
+                    data = json.loads(
+                        open(f"static/text/reglaments/{line.split('~~')[2].strip()}", encoding="utf-8").read())
+                    title_object = titles.pars_string_title(line, data)
+                    complex_titles.append(title_object)
+
 
     if not isinstance(current_root, list):
         for title in current_root:
@@ -64,13 +97,13 @@ async def process_title(parsed_title: titles.Title,
                 title = title.strip()
                 id = search.find_index_by_line(title)
                 line = search.find_line_by_index(id)
-                data = json.loads(open(f"static/text/reglaments/{line.split('/')[2].strip()}").read())
+                data = json.loads(open(f"static/text/reglaments/{line.split('~~')[2].strip()}", encoding="utf-8").read())
                 title_object = titles.pars_string_title(line,data)
                 complex_titles.append(title_object)
 
     if complex_titles:
         # Получаю список заголовков, которые входят в клавиатуру(их значения это другие словари)
-        showing_complex = [f"\n{element.title_name[:70]}...\n" for element in complex_titles]
+        showing_complex = [f"\n🔸{element.title_name[:70]}...\n" for element in complex_titles]
 
         all_together = all_together+showing_complex
 

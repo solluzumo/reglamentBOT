@@ -7,10 +7,10 @@ def find_index_by_line(search_string:str)->str:
     """
 
     file_path = "static/text/accordance"
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding="utf-8") as file:
         for line in file:
             if search_string in line:
-                return line.split('/')[0]
+                return line.split('~~')[0]
 
 
 #Получение строки по id из accorance.txt
@@ -23,10 +23,11 @@ def find_line_by_index(index:str)->str:
     """
 
     file_path = "static/text/accordance"
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding="utf-8") as file:
         for line in file:
-            line_info = line.split('/')
+            line_info = line.split('~~')
             if line_info[0] == index or line_info[1] == index:
+                print(line_info, index)
                 return line
 
 
@@ -44,12 +45,17 @@ def find_value_by_key(dictionary:dict, target_key:str)->dict|None:
         return dictionary[target_key]
 
     for key, value in dictionary.items():
+        if isinstance(find_value_by_key(dictionary,key),list):
+            for el in find_value_by_key(dictionary,key):
+                if isinstance(el,dict):
+                    for key,value in el.items():
+                        if key == target_key:
+                            return value
         if isinstance(value, dict):
             result = find_value_by_key(value, target_key)
             if result is not None:
                 return result
     return None
-
 
 #Получение ключа по его значению, используется рекурсивный метод, так как вложенность словарей достигает 3х уровней
 def get_key_by_key(dictionary:dict, search_key:str)->dict|None|str:
@@ -68,10 +74,17 @@ def get_key_by_key(dictionary:dict, search_key:str)->dict|None|str:
             return "/start"
         if isinstance(dictionary[key],dict):
             for subkey in dictionary[key].keys():
+                if isinstance(find_value_by_key(dictionary, subkey), list):
+                    for el in find_value_by_key(dictionary, subkey):
+                        if isinstance(el, dict):
+                            for skey, value in el.items():
+                                if skey == search_key:
+                                    return subkey
                 if search_key == subkey:
                     return key
                 if isinstance(dictionary[key][subkey],dict):
                     for sub_sub in dictionary[key][subkey].keys():
+
                         if search_key == sub_sub:
                             return subkey
     return None

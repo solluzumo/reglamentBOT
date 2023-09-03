@@ -6,9 +6,10 @@ class Reglament:
     Этот объект представляет регламент для найденоого по запросу пользователя заголовка.
     """
 
-    def __init__(self, reg_name:str, glossary:str):
+    def __init__(self, reg_name:str, glossary:str, full_reg_name:str):
         self.reg_name = reg_name
         self.glossary = glossary
+        self.full_reg_name = full_reg_name
 class Title:
     """
     Этот объект представляет найденный по запросу пользователя заголовок.
@@ -40,14 +41,25 @@ def parse_string_reglament(reglament_string:str)->Reglament:
     :param reglament_string: str
     :return: reglaments.Reglament
     """
-
     reglaments_list = os.listdir("static/text/reglaments-accordance")
     reglament_string = reglament_string.strip()
+    full_reg_name_list = open("static/text/reglament-abbreviation","r",encoding="utf-8").read().split("\n")
+    full_reg_name = ""
+
+    for string in full_reg_name_list:
+        abbreviation = string.split("~~")[0]
+        if abbreviation == reglament_string:
+            full_reg_name = string.split("~~")[1]
+    if len(full_reg_name)<1:
+        if len(reglament_string)>183:
+            full_reg_name = reglament_string[:183]
+        else:
+            full_reg_name = reglament_string
     for reglament_name in reglaments_list:
         if reglament_name == "glossary_"+reglament_string:
             reglament_file = open(f"static/text/reglaments-accordance/{reglament_name}", 'r', encoding='utf-8').read()
             reglament_glossary = reglament_file
-            return Reglament(reglament_string, reglament_glossary)
+    return Reglament(reglament_string, reglament_glossary,full_reg_name)
 
 
 def pars_string_title(title_string:str, data:dict)->Title:
@@ -58,7 +70,7 @@ def pars_string_title(title_string:str, data:dict)->Title:
     :return: titles.Title
     """
 
-    title_info = title_string.split('/')
+    title_info = title_string.split('~~')
     title_id = title_info[0]
     title_name = title_info[1]
 
