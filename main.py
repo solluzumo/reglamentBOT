@@ -9,8 +9,8 @@ import title_handler
 import search
 import classes as titles
 
-# Ваш токен бота
-TOKEN = "5781618054:AAHAcNTbY0GC391C5JU76O1yGLiNCoxtg1U"
+
+TOKEN = os.getenv("token")
 
 # Инициализируем бота и диспетчер
 bot = Bot(token=TOKEN)
